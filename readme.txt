@@ -20,3 +20,15 @@ This is a plugin toolkit that helps developers write plugins faster. It consists
 * *scbCron* - cron handling
 
 You can find out more about it [here](http://scribu.net/wordpress/scb-framework).
+
+== Changelog ==
+
+= 1.1 =
+* better scbBoxesPage
+* enhancements for scbAdminPage
+* bugfix in scbOptions
+* [more info](http://scribu.net/wordpress/scb-framework/sf-1-1.html)
+
+= 1.0 =
+* initial release
+* [more info](http://scribu.net/wordpress/scb-framework/introducing-scbframework.html)
