@@ -1,79 +1,99 @@
 <?php
 
-class scbCron
-{
-	public $hook;
-	public $schedule;
-	public $callback_args;
+class scbCron {
+	protected $schedule;
+	protected $interval;
+	protected $time;
 
-	/* $args:
-		string $action OR callback $callback
-		string $schedule OR number $interval
-		array $callback_args (optional)
+	protected $hook;
+	protected $callback_args;
+
+	/**
+	 * Create a new cron job
+	 *
+	 * @param string Reference to main plugin file
+	 * @param array List of args:
+	 		string $action OR callback $callback
+			string $schedule OR number $interval
+			array $callback_args (optional)
+	 * @param bool Debug mode
 	 */
-	function __construct($file, $args, $debug = false)
-	{
-		$this->set_args($args);
+	function __construct($file, $args, $debug = false) {
+		$this->_set_args($args);
 
-		register_activation_hook($file, array($this, 'activate'));
-		register_deactivation_hook($file, array($this, 'deactivate'));
+		register_activation_hook($file, array($this, 'reset'));
+		register_deactivation_hook($file, array($this, 'unschedule'));
+
+		add_filter('cron_schedules', array($this, '_add_timing'));
 
 		if ( $debug )
-			add_action('admin_footer', array(get_class(), 'debug'));
+			self::debug();
 	}
 
-	private function set_args($args)
-	{
+	/* Change the interval of the cron job
+	 *
+	 * @param array List of args:
+			string $schedule OR number $interval
+	 		timestamp $time (optional)
+	 */
+	function reschedule($args) {
 		extract($args);
 
-		// Set hook
-		if ( $callback )
-		{
-			$this->hook = self::callback_to_string($callback);
-
-			add_action($this->hook, $callback);
-		}
-		elseif ( $action )
-			$this->hook = $action;
-		else
-			trigger_error('$action OR $callback not set', E_USER_WARNING);
-
-		// Set schedule
-		if ( $interval )
-		{
+		if ( $schedule && $this->schedule != $schedule ) {
+			$this->schedule = $schedule;
+		} elseif ( $interval && $this->interval != $interval ) {
 			$this->schedule = $interval . 'secs';
 			$this->interval = $interval;
-			add_filter('cron_schedules', array($this, 'add_timing'));
 		}
-		elseif ( $schedule )
-			$this->schedule = $schedule;
-		else
-			trigger_error('$schedule OR $interval not set', E_USER_WARNING);
 
-		$this->callback_args = (array) $callback_args;
+		$this->time = $time;
+
+		$this->reset();
 	}
 
-	//	$args: string $schedule OR number $interval
-	function reschedule($args)
-	{
-		extract($args);
-
-		if ( $schedule && $this->schedule != $schedule )
-		{
-			$this->schedule = $schedule;
-			$this->reset();
-		} 
-		elseif ( $interval && $this->interval != $interval )
-		{
-			$this->schedule = $interval . 'secs';
-			$this->interval = $interval;
-			add_filter('cron_schedules', array($this, 'add_timing'));
-			$this->reset();
-		}
+	/**
+	 * Reset the schedule
+	 */
+	function reset() {
+		$this->unschedule();
+		$this->schedule();
 	}
 
-	function add_timing($schedules)
-	{
+	/**
+	 * Clear the cron job
+	 */
+	function unschedule() {
+#		wp_clear_scheduled_hook($this->hook, $this->callback_args);
+		self::really_clear_scheduled_hook($this->hook);
+	}
+
+	/**
+	 * Execute the job now
+	 */
+	function do_now() {
+		do_action($this->hook);
+	}
+
+	/**
+	 * Execute the job with a given delay
+	 * @param int Delay in seconds
+	 */
+	function do_once($delay = 0) {
+		wp_schedule_single_event(time() + $delay, $this->hook, $this->callback_args);
+	}
+
+	/**
+	 * Display current cron jobs
+	 */
+	function debug() {
+		add_action('admin_footer', array(__CLASS__, '_debug'));
+	}
+
+
+//_____INTERNAL METHODS_____
+
+
+	function _add_timing($schedules) {
 		if ( isset($schedules[$this->schedule]) )
 			return $schedules;
 
@@ -85,34 +105,68 @@ class scbCron
 		return $schedules;
 	}
 
-	function reset()
-	{
-		$this->deactivate();
-		$this->activate();
-	}
+	function _debug() {
+		if ( ! current_user_can('manage_options') )
+			return;
 
-	function activate()
-	{
-		wp_schedule_event(time(), $this->schedule, $this->hook, $this->callback_args);
-	}
-
-	function deactivate()
-	{
-		wp_clear_scheduled_hook($this->hook);
-	}
-
-	function debug()
-	{
 		echo "<pre>";
-		var_dump(get_option('cron'));
+		print_r(get_option('cron'));
 		echo "</pre>";
 	}
 
-	static function callback_to_string($callback)
-	{
-		if ( !is_array($callback) )
+	protected function schedule() {
+		if ( ! $this->time )
+			$this->time = time();
+
+		wp_schedule_event($this->time, $this->schedule, $this->hook, $this->callback_args);
+	}
+
+	protected function _set_args($args) {
+		extract($args);
+
+		// Set hook
+		if ( $callback ) {
+			$this->hook = self::_callback_to_string($callback);
+
+			add_action($this->hook, $callback);
+		} elseif ( $action ) {
+			$this->hook = $action;
+		} else {
+			trigger_error('$action OR $callback not set', E_USER_WARNING);
+		}
+
+		// Set schedule
+		if ( $interval ) {
+			$this->schedule = $interval . 'secs';
+			$this->interval = $interval;
+		} elseif ( $schedule ) {
+			$this->schedule = $schedule;
+		} else {
+			trigger_error('$schedule OR $interval not set', E_USER_WARNING);
+		}
+
+		$this->callback_args = (array) $callback_args;
+	}
+
+	protected static function really_clear_scheduled_hook($name) {
+		$crons = _get_cron_array();
+
+		foreach ( $crons as $timestamp => $hooks ) {
+			foreach ( $hooks as $hook => $args )
+				if ( $hook == $name )
+					unset($crons[$timestamp][$hook]);
+
+			if ( empty($hooks) )
+				unset($crons[$timestamp]);
+		}
+
+		_set_cron_array( $crons );
+	}
+
+	protected static function _callback_to_string($callback) {
+		if ( ! is_array($callback) )
 			$str = $callback;
-		elseif ( !is_string($callback[0]) )
+		elseif ( ! is_string($callback[0]) )
 			$str = get_class($callback[0]) . '_' . $callback[1];
 		else
 			$str = $callback[0] . '::' . $callback[1];

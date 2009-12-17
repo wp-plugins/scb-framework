@@ -1,34 +1,23 @@
 <?php
 /*
 Plugin Name: scbFramework
-Version: 1.0.1
+Version: 1.4a
 Description: Useful classes for plugin developers
 Author: scribu
 Author URI: http://scribu.net
 Plugin URI: http://scribu.net/wordpress/scb-framework
 */
 
-abstract class scbFramework
-{
-	static $version = '1.0';
+abstract class scbFramework {
+	const version = '1.4';
 
-	static function init()
-	{
-		// Set autoload
-		if ( function_exists('spl_autoload_register') )
-			spl_autoload_register(array(__CLASS__, 'autoload'));
-		else
-			// Load all classes manually
-			foreach ( array('scbForms', 'scbOptions', 'scbWidget', 'scbCron',
-				'scbOptionsPage', 'scbAdminPage', 'scbBoxesPage') as $class )
-				self::autoload($class);
+	static function init() {
+		require_once dirname(__FILE__) . '/load.php';
 
-//		register_activation_hook(__FILE, array(__CLASS__, 'put_first'));
 		add_action('shutdown', array(__CLASS__, 'put_first'));
 	}
 
-	static function put_first() 
-	{
+	static function put_first() {
 		$plugin = plugin_basename(__FILE__);
 		$current = get_option('active_plugins');
 
@@ -46,29 +35,8 @@ abstract class scbFramework
 
 		update_option('active_plugins', $current);
 	}
-
-	static function autoload($className)
-	{
-		if ( substr($className, 0, 3) != 'scb' )
-			return false;
-
-		if ( class_exists($className) )
-			return false;
-
-		$fname = self::get_file_path($className);
-
-		if ( ! @file_exists($fname) )
-			return false;
-
-		include_once($fname);
-		return true;
-	}
-
-	static function get_file_path($className)
-	{
-		return dirname(__FILE__) . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . substr($className, 3) . '.php';
-	}
 }
 
 scbFramework::init();
+
 
