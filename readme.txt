@@ -1,9 +1,9 @@
 === scbFramework ===
 Contributors: scribu
 Donate link: http://scribu.net/wordpress
-Tags: admin, toolkit, forms, cron, settings, rewrite
+Tags: admin, toolkit, framework, forms, cron, settings, rewrite
 Requires at least: 2.8
-Tested up to: 2.9
+Tested up to: 3.0
 Stable tag: 1.4
 
 A set of useful classes for faster plugin development.
@@ -15,20 +15,26 @@ This is a plugin toolkit that helps developers write plugins faster. It consists
 * *scbForms* - form creation
 * *scbAdminPage* - admin page creation
 * *scbBoxesPage* - admin page with meta boxes
-* *scbWidget* - widget creation
 * *[scbOptions](http://scribu.net/wordpress/scb-framework/scb-options.html)* - option handling
+* *scbWidget* - widget creation
 * *scbCron* - wp-cron handling
 * *scbRewrite* - rewrite rules handling
 * *scbTable* - database table creation
 * *scbUtil* - useful functions
 
-You can find out more about it [here](http://scribu.net/wordpress/scb-framework).
+Want to take a quick look at the code? Go [here](http://plugins.trac.wordpress.org/browser/scb-framework/trunk/classes).
 
 == Changelog ==
 
 = 1.5 =
-* added scbOptions::get_defaults()
-* made scbAdminPage::submit_button() accept an array of arguments
+* new methods for scbOptions: get_defaults(); cleanup(); __isset();
+* new method for scbAdminPage: page_help();
+* new method for scbUtil: add_uninstall_hook();
+* scbAdminPage::submit_button() accepts an array of arguments
+* scbAdminPage can create top level menus
+* scbBoxesPage can assign the same handler to multiple boxes, with different arguments
+* debug() outputs at the end of the page, only for administrators
+* [more info](http://scribu.net/wordpress/scb-framework/sf-1-5.html)
 
 = 1.4 =
 * new classes: scbUtil & scbRewrite

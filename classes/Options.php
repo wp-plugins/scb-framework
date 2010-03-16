@@ -28,7 +28,7 @@ class scbOptions {
 			register_activation_hook($file, array($this, '_update_reset'));
 		}
 
-		register_uninstall_hook($file, array($this, '_delete'));
+		scbUtil::add_uninstall_hook($file, array($this, '_delete'));
 	}
 
 	/**
@@ -65,6 +65,23 @@ class scbOptions {
 			$newdata = array($field => $value);
 
 		$this->update(array_merge($this->data, $newdata));
+	}
+
+	/**
+	 * Remove any keys that are not in the defaults array
+	 */
+	function cleanup() {
+		$r = array();
+
+		if ( ! is_array($this->defaults) )
+			return false;
+
+		foreach ( array_keys($this->defaults) as $key )
+			$r[$key] = $this->data[$key];
+
+		$this->update($r);
+
+		return true;
 	}
 
 	/**
@@ -118,6 +135,11 @@ class scbOptions {
 	// Magic method: $options->field = $value
 	function __set($field, $value) {
 		$this->set($field, $value);
+	}
+
+	// Magic method: isset($options->field)
+	function __isset($field) {
+		return isset($this->data[$field]);
 	}
 
 	// Add new fields with their default values
