@@ -28,12 +28,17 @@ class scbDebug {
 		echo "</pre>";	
 	}
 
+	static function info() {
+		self::raw(scbLoad3::get_info());
+	}
+
 	private static function array_map_deep($callback, $arg) {
-		if ( is_scalar($arg) )
+		if ( is_scalar($arg) || is_null($arg) )
 			return call_user_func($callback, $arg);
 
-		foreach ( $arg as &$val )
-			$val = self::array_map_deep($callback, $val);
+		elseif ( is_array($arg) )
+			foreach ( $arg as &$val )
+				$val = self::array_map_deep($callback, $val);
 
 		return $arg;
 	}
@@ -65,6 +70,12 @@ function debug_fb() {
 	}
 
 	new scbDebug($args);
+}
+endif;
+
+if ( ! function_exists('scb_debug') ):
+function scb_debug() {
+	add_action('shutdown', array('scbDebug', 'info'));
 }
 endif;
 

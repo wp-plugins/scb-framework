@@ -4,7 +4,7 @@ Donate link: http://scribu.net/wordpress
 Tags: admin, toolkit, framework, forms, cron, settings, rewrite
 Requires at least: 2.8
 Tested up to: 3.0
-Stable tag: 1.5
+Stable tag: 1.6
 
 A set of useful classes for faster plugin development.
 
@@ -17,10 +17,12 @@ This is a plugin toolkit that helps developers write plugins faster. It consists
 * *scbBoxesPage* - admin page with meta boxes
 * *[scbOptions](http://scribu.net/wordpress/scb-framework/scb-options.html)* - option handling
 * *scbWidget* - widget creation
+* *scbQuery* - WP_Query wrapper
 * *scbCron* - wp-cron handling
 * *scbRewrite* - rewrite rules handling
 * *scbTable* - database table creation
 * *scbUtil* - useful functions
+* *scbDebug* - debugging functions
 
 Want to take a quick look at the code? Go [here](http://plugins.trac.wordpress.org/browser/scb-framework/trunk/scb).
 
@@ -40,9 +42,10 @@ scbLoad3: load directly; attempt to load the newest version of the library, firs
 
 = 1.6 =
 * load the most recent version available
-* auto-uninstall for scbWidget
-* new methods in scbUtil: array_pluck(), objects_to_assoc(), split_at()
 * move debugging functions to separate file
+* new methods in scbUtil: array_pluck(), objects_to_assoc(), split_at()
+* auto-uninstall for scbWidget
+* [more info](http://scribu.net/wordpress/scb-framework/sf-1-6.html)
 
 = 1.5 =
 * new methods for scbOptions: get_defaults(); cleanup(); __isset();
