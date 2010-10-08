@@ -28,6 +28,17 @@ You can download this plugin to get a quick start on using the framework.
 
 Links: [Framework News & Docs](http://scribu.net/wordpress/scb-framework) | [Author's Site](http://scribu.net)
 
+== Installation ==
+
+1. Download and unzip the archive.
+2. Move *scb-load.php* file and *scb* folder from *scb-framework* to *mu-plugins*. *
+
+All plugins and themes will now have access to the scb classes and functions.
+
+Plugins that come with scbFramework pre-packaged will also use the version in mu-plugins.
+
+* *mu-plugins* is a folder in wp-content. Create it if it's not there.
+
 == Changelog ==
 
 = 09 Sep 2010 (r24) =
