@@ -2,7 +2,7 @@
 Contributors: scribu, Rarst
 Tags: admin, toolkit, framework, forms, cron, settings, sql
 Requires at least: 3.2
-Tested up to: 3.5
+Tested up to: 3.5.1
 Stable tag: trunk
 
 A set of useful classes for faster plugin development.
